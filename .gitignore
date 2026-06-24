@@ -1,0 +1,99 @@
+# =============================================================================
+# Jersey Ice Cream Demand Intelligence Platform — .gitignore
+# =============================================================================
+
+# ─── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# ─── Node.js ─────────────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+
+# ─── IDE ─────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ─── Environment & Secrets ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets/
+
+# ─── Docker ──────────────────────────────────────────────────────────────────
+docker-compose.override.yml
+
+# ─── Database ────────────────────────────────────────────────────────────────
+*.db
+*.sqlite3
+pgdata/
+
+# ─── ML / AI Artifacts ──────────────────────────────────────────────────────
+*.pt
+*.pth
+*.onnx
+*.pkl
+*.joblib
+*.h5
+*.hdf5
+model_artifacts/
+mlruns/
+wandb/
+
+# ─── Data ────────────────────────────────────────────────────────────────────
+data/
+*.csv
+*.parquet
+!tests/fixtures/*.csv
+
+# ─── Coverage & Testing ─────────────────────────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/
+coverage/
+*.lcov
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ─── MinIO / Object Storage ─────────────────────────────────────────────────
+minio_data/
+
+# ─── Kafka ───────────────────────────────────────────────────────────────────
+kafka_data/
+zookeeper_data/
+
+# ─── Redis ───────────────────────────────────────────────────────────────────
+redis_data/
+dump.rdb
+
+# ─── Terraform / IaC ────────────────────────────────────────────────────────
+*.tfstate
+*.tfstate.backup
+.terraform/

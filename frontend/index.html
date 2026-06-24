@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jersey Ice Cream — Business Intelligence Suite</title>
+    <meta name="description" content="End-to-end AI-powered business intelligence platform for Jersey Ice Cream — Supply Chain, Production, Marketing, Distribution, Finance & IT">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="view-company">
+    <!-- Ambient -->
+    <div class="ambient-bg">
+        <div class="ambient-orb ambient-orb-1"></div>
+        <div class="ambient-orb ambient-orb-2"></div>
+        <div class="ambient-orb ambient-orb-3"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">🍦</div>
+                <div class="logo-text">
+                    <span class="logo-name">Jersey</span>
+                    <span class="logo-subtitle">Business Intelligence</span>
+                </div>
+            </div>
+            <!-- Role Switcher Toggle -->
+            <div class="role-switcher-wrap">
+                <div class="role-switcher">
+                    <button class="role-btn active" id="btn-role-company" title="Executive Strategic View">Company</button>
+                    <button class="role-btn" id="btn-role-employee" title="Field Operations View">Employee</button>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-section-label role-company">OVERVIEW</div>
+            <a href="#" class="menu-item active role-company" data-section="command-center" id="nav-command">
+                <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+                <span class="menu-label">Command Center</span>
+            </a>
+
+            <div class="menu-section-label role-company">BUSINESS DOMAINS</div>
+            <div class="menu-section-label role-employee">LOGISTICS</div>
+            <a href="#" class="menu-item role-employee" data-section="supply-chain" id="nav-supply">
+                <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg></span>
+                <span class="menu-label">Supply Chain</span>
+                <span class="menu-badge green-badge">Live</span>
+            </a>
+            <a href="#" class="menu-item role-company" data-section="production" id="nav-production">
+                <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg></span>
+                <span class="menu-label">Production</span>
+            </a>
+            <a href="#" class="menu-item role-company" data-section="distribution" id="nav-distribution">
+                <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+                <span class="menu-label">Distribution</span>
+            </a>
+            <a href="#" class="menu-item role-company" data-section="marketing" id="nav-marketing">
+                <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></span>
+                <span class="menu-label">Marketing</span>
+            </a>
+            <a href="#" class="menu-item role-company" data-section="finance" id="nav-finance">
+                <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+                <span class="menu-label">Finance</span>
+            </a>
+
+            <div class="menu-section-label role-company">INTELLIGENCE</div>
+            <div class="menu-section-label role-employee">MONITORING</div>
+            <a href="#" class="menu-item role-company" data-section="ai-hub" id="nav-ai">
+                <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93"/><path d="M8.24 4.23A4 4 0 0 1 12 2"/><circle cx="12" cy="12" r="3"/><path d="M12 16v6"/><path d="M6 12H2"/><path d="M22 12h-4"/><path d="m17 7 3-3"/><path d="m4 20 3-3"/><path d="m20 20-3-3"/><path d="m4 4 3 3"/></svg></span>
+                <span class="menu-label">AI Hub</span>
+                <span class="menu-badge purple-badge">AI</span>
+            </a>
+            <a href="#" class="menu-item role-employee" data-section="live-map" id="nav-map">
+                <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></span>
+                <span class="menu-label">Live Map</span>
+            </a>
+            <a href="pitch-deck.html" target="_blank" class="menu-item" id="nav-pitch-deck" style="margin-top: 10px; border: 1px dashed rgba(88, 166, 255, 0.2); background: rgba(88, 166, 255, 0.03);">
+                <span class="menu-icon" style="color: var(--accent-blue);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+                <span class="menu-label" style="color: var(--accent-blue); font-weight: 600;">View Pitch Deck ↗</span>
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="user-avatar">DG</div>
+                <div class="user-info">
+                    <span class="user-name">Dhruv G.</span>
+                    <span class="user-role">CEO · Admin</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="main-content" id="main-content">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="menu-toggle" id="menu-toggle">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <div class="page-title">
+                    <h1 id="page-title">Command Center</h1>
+                    <span class="page-subtitle" id="page-subtitle">Holistic business intelligence at a glance</span>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div class="weather-widget"><span class="weather-icon">☀️</span><span class="weather-temp">38°C</span><span class="weather-label">Hyderabad</span><span class="weather-impact positive">+42% demand</span></div>
+                <div class="live-indicator"><span class="live-dot"></span><span class="live-text">Live</span></div>
+                <button class="notification-btn" id="notification-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <span class="notification-badge">5</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Interactive Storyboard Banner -->
+        <div class="storyboard-banner" id="storyboard-banner">
+            <div class="story-header">
+                <span class="story-badge">💡 Interactive Solution Flow</span>
+                <div class="story-steps">
+                    <span class="story-dot active" data-step="0">1</span>
+                    <span class="story-line"></span>
+                    <span class="story-dot" data-step="1">2</span>
+                    <span class="story-line"></span>
+                    <span class="story-dot" data-step="2">3</span>
+                    <span class="story-line"></span>
+                    <span class="story-dot" data-step="3">4</span>
+                    <span class="story-line"></span>
+                    <span class="story-dot" data-step="4">5</span>
+                    <span class="story-line"></span>
+                    <span class="story-dot" data-step="5">6</span>
+                </div>
+            </div>
+            <div class="story-body">
+                <div class="story-content">
+                    <h3 class="story-title" id="story-title">Step 1: AI Hyperlocal Demand Forecasting</h3>
+                    <p class="story-text" id="story-text">Jersey's AI models predict tomorrow will hit 40°C with an IPL Cricket Match at Uppal Stadium, triggering a 42% demand spike. Watch the forecast spike on the AI Hub chart.</p>
+                </div>
+                <div class="story-actions">
+                    <button class="btn" id="btn-story-prev" disabled>Back</button>
+                    <button class="btn btn-primary btn-pulse" id="btn-story-next">Next Step →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECTION: COMMAND CENTER
+             ═══════════════════════════════════════════════════════════════════ -->
+        <section class="section active" id="section-command-center">
+            <!-- Top-level KPIs -->
+            <div class="kpi-grid-6">
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="kpi-body"><span class="kpi-label">Annual Revenue</span><span class="kpi-value mono" data-target="247" data-prefix="₹" data-suffix=" Cr">₹0 Cr</span><span class="kpi-change up">↑ 34% YoY</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div><div class="kpi-body"><span class="kpi-label">Active Carts</span><span class="kpi-value mono" data-target="8547">0</span><span class="kpi-change up">↑ 12% from last month</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg></div><div class="kpi-body"><span class="kpi-label">Production (Today)</span><span class="kpi-value mono" data-target="42500" data-suffix=" L">0 L</span><span class="kpi-change up">↑ 18% capacity utilized</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-cyan"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><div class="kpi-body"><span class="kpi-label">Distributors</span><span class="kpi-value mono" data-target="127">0</span><span class="kpi-change up">↑ 8 onboarded this month</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="kpi-body"><span class="kpi-label">AI Forecast Accuracy</span><span class="kpi-value mono" data-target="91.7" data-suffix="%">0%</span><span class="kpi-change up">↑ 3.2pp from last week</span></div></div>
+                <div class="kpi-card alert-card"><div class="kpi-icon-wrap ic-red"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="kpi-body"><span class="kpi-label">Stockout Alerts</span><span class="kpi-value mono" data-target="23">0</span><span class="kpi-change down">↓ 67% after AI optimization</span></div></div>
+            </div>
+
+            <!-- Domain Health Cards -->
+            <div class="domain-grid">
+                <div class="domain-card" data-goto="supply-chain">
+                    <div class="domain-header"><span class="domain-icon">🔗</span><h3>Supply Chain</h3><span class="domain-score green">92%</span></div>
+                    <div class="domain-metrics">
+                        <div class="dm"><span class="dm-label">Cold Chain Compliance</span><span class="dm-val green">98.2%</span></div>
+                        <div class="dm"><span class="dm-label">Avg Delivery Time</span><span class="dm-val">42 min</span></div>
+                        <div class="dm"><span class="dm-label">Wastage Rate</span><span class="dm-val green">2.9%</span></div>
+                    </div>
+                    <div class="domain-bar"><div class="domain-bar-fill" style="width:92%;background:var(--accent-green)"></div></div>
+                </div>
+                <div class="domain-card" data-goto="production">
+                    <div class="domain-header"><span class="domain-icon">🏭</span><h3>Production</h3><span class="domain-score green">88%</span></div>
+                    <div class="domain-metrics">
+                        <div class="dm"><span class="dm-label">Plant Utilization</span><span class="dm-val">87.3%</span></div>
+                        <div class="dm"><span class="dm-label">Quality Pass Rate</span><span class="dm-val green">99.2%</span></div>
+                        <div class="dm"><span class="dm-label">SKUs Active</span><span class="dm-val">48</span></div>
+                    </div>
+                    <div class="domain-bar"><div class="domain-bar-fill" style="width:88%;background:var(--accent-blue)"></div></div>
+                </div>
+                <div class="domain-card" data-goto="distribution">
+                    <div class="domain-header"><span class="domain-icon">🚛</span><h3>Distribution</h3><span class="domain-score yellow">78%</span></div>
+                    <div class="domain-metrics">
+                        <div class="dm"><span class="dm-label">On-Time Delivery</span><span class="dm-val yellow">82.4%</span></div>
+                        <div class="dm"><span class="dm-label">Fleet Utilization</span><span class="dm-val">71.8%</span></div>
+                        <div class="dm"><span class="dm-label">Coverage (Districts)</span><span class="dm-val">34/50</span></div>
+                    </div>
+                    <div class="domain-bar"><div class="domain-bar-fill" style="width:78%;background:var(--accent-orange)"></div></div>
+                </div>
+                <div class="domain-card" data-goto="marketing">
+                    <div class="domain-header"><span class="domain-icon">📣</span><h3>Marketing</h3><span class="domain-score green">85%</span></div>
+                    <div class="domain-metrics">
+                        <div class="dm"><span class="dm-label">Brand Recall (NPI)</span><span class="dm-val">72%</span></div>
+                        <div class="dm"><span class="dm-label">Campaign ROI</span><span class="dm-val green">4.2x</span></div>
+                        <div class="dm"><span class="dm-label">Social Engagement</span><span class="dm-val green">↑ 156%</span></div>
+                    </div>
+                    <div class="domain-bar"><div class="domain-bar-fill" style="width:85%;background:var(--accent-purple)"></div></div>
+                </div>
+                <div class="domain-card" data-goto="finance">
+                    <div class="domain-header"><span class="domain-icon">💰</span><h3>Finance</h3><span class="domain-score green">91%</span></div>
+                    <div class="domain-metrics">
+                        <div class="dm"><span class="dm-label">Gross Margin</span><span class="dm-val green">42.8%</span></div>
+                        <div class="dm"><span class="dm-label">EBITDA Margin</span><span class="dm-val">18.3%</span></div>
+                        <div class="dm"><span class="dm-label">Cash Runway</span><span class="dm-val green">14 months</span></div>
+                    </div>
+                    <div class="domain-bar"><div class="domain-bar-fill" style="width:91%;background:var(--accent-green)"></div></div>
+                </div>
+                <div class="domain-card" data-goto="ai-hub">
+                    <div class="domain-header"><span class="domain-icon">🧠</span><h3>AI & Technology</h3><span class="domain-score green">94%</span></div>
+                    <div class="domain-metrics">
+                        <div class="dm"><span class="dm-label">System Uptime</span><span class="dm-val green">99.97%</span></div>
+                        <div class="dm"><span class="dm-label">ML Models Live</span><span class="dm-val">4</span></div>
+                        <div class="dm"><span class="dm-label">API Latency (p95)</span><span class="dm-val green">142ms</span></div>
+                    </div>
+                    <div class="domain-bar"><div class="domain-bar-fill" style="width:94%;background:var(--accent-cyan)"></div></div>
+                </div>
+            </div>
+
+            <!-- Bottom: Revenue + Live Feed -->
+            <div class="cmd-bottom-grid">
+                <div class="chart-card">
+                    <div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Revenue Trajectory</h3><span class="chart-subtitle">Monthly revenue with growth trend · FY 2025-26</span></div></div>
+                    <div class="chart-body"><canvas id="revenue-trajectory-chart"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title">⚡ Live Alert Feed</h3><span class="card-badge pulse-badge">Live</span></div>
+                    <div class="alert-feed" id="alert-feed"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECTION: SUPPLY CHAIN
+             ═══════════════════════════════════════════════════════════════════ -->
+        <section class="section" id="section-supply-chain">
+            <div class="kpi-grid-4">
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-cyan"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div class="kpi-body"><span class="kpi-label">Cold Chain Compliance</span><span class="kpi-value mono">98.2%</span><span class="kpi-change up">All vehicles within range</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="kpi-body"><span class="kpi-label">Quality Incidents</span><span class="kpi-value mono">0</span><span class="kpi-change up">Zero defect streak: 47 days</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="kpi-body"><span class="kpi-label">Avg Refill Time</span><span class="kpi-value mono">42 min</span><span class="kpi-change up">↓ 38% from manual process</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="kpi-body"><span class="kpi-label">Wastage Rate</span><span class="kpi-value mono">2.9%</span><span class="kpi-change up">↓ 80% reduction (was 15%)</span></div></div>
+            </div>
+            <div class="two-col-grid">
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Cold Chain Temperature Monitoring</h3><span class="chart-subtitle">Real-time across all warehouses · Last 24 hours</span></div></div><div class="chart-body tall"><canvas id="cold-chain-chart"></canvas></div></div>
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Inventory Levels by Warehouse</h3><span class="chart-subtitle">Current stock vs capacity</span></div></div><div class="chart-body tall"><canvas id="inventory-warehouse-chart"></canvas></div></div>
+            </div>
+            <div class="two-col-grid">
+                <div class="card"><div class="card-header"><h3 class="card-title">🚨 Vendor Refill Queue</h3><span class="card-badge pulse-badge">Live</span></div><div class="refill-feed" id="supply-refill-feed"></div></div>
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Wastage Trend</h3><span class="chart-subtitle">Monthly product wastage reduction</span></div></div><div class="chart-body"><canvas id="wastage-chart"></canvas></div></div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECTION: PRODUCTION
+             ═══════════════════════════════════════════════════════════════════ -->
+        <section class="section" id="section-production">
+            <div class="kpi-grid-4">
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg></div><div class="kpi-body"><span class="kpi-label">Daily Output</span><span class="kpi-value mono">42,500 L</span><span class="kpi-change up">87.3% capacity utilization</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="kpi-body"><span class="kpi-label">Quality Pass Rate</span><span class="kpi-value mono">99.2%</span><span class="kpi-change up">FSSAI Grade A+</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="kpi-body"><span class="kpi-label">Active SKUs</span><span class="kpi-value mono">48</span><span class="kpi-change up">6 new this quarter</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="kpi-body"><span class="kpi-label">Raw Material Cost</span><span class="kpi-value mono">₹18.4/L</span><span class="kpi-change down">↑ 3.2% (milk prices)</span></div></div>
+            </div>
+            <div class="two-col-grid">
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Production Output vs Demand</h3><span class="chart-subtitle">Daily production aligned with AI-predicted demand</span></div></div><div class="chart-body tall"><canvas id="production-demand-chart"></canvas></div></div>
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Product Mix — Category Breakdown</h3><span class="chart-subtitle">Production volume by category</span></div></div><div class="chart-body tall"><canvas id="product-mix-chart"></canvas></div></div>
+            </div>
+            <div class="card"><div class="card-header"><h3 class="card-title">🏆 Top Products Performance</h3></div><div class="products-table" id="products-table"></div></div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECTION: DISTRIBUTION
+             ═══════════════════════════════════════════════════════════════════ -->
+        <section class="section" id="section-distribution">
+            <div class="kpi-grid-4">
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><div class="kpi-body"><span class="kpi-label">Fleet Size</span><span class="kpi-value mono">84</span><span class="kpi-change up">12 refrigerated vans added</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div class="kpi-body"><span class="kpi-label">Coverage</span><span class="kpi-value mono">34 Districts</span><span class="kpi-change up">Expanding to 50 by Q4</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="kpi-body"><span class="kpi-label">On-Time Delivery</span><span class="kpi-value mono">82.4%</span><span class="kpi-change up">↑ 12pp improvement</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="kpi-body"><span class="kpi-label">Active Vendors</span><span class="kpi-value mono">8,547</span><span class="kpi-change up">Revenue/cart ₹1,847/day</span></div></div>
+            </div>
+            <div class="two-col-grid">
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Route Efficiency & Delivery Performance</h3><span class="chart-subtitle">Weekly on-time rate by region</span></div></div><div class="chart-body tall"><canvas id="route-efficiency-chart"></canvas></div></div>
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Distributor Performance Ranking</h3><span class="chart-subtitle">Top distributors by revenue & compliance</span></div></div><div class="chart-body tall"><canvas id="distributor-rank-chart"></canvas></div></div>
+            </div>
+            <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Network Expansion Plan</h3><span class="chart-subtitle">Quarterly distributor & cart growth trajectory</span></div></div><div class="chart-body"><canvas id="network-growth-chart"></canvas></div></div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECTION: MARKETING
+             ═══════════════════════════════════════════════════════════════════ -->
+        <section class="section" id="section-marketing">
+            <div class="kpi-grid-4">
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-pink"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="kpi-body"><span class="kpi-label">Brand Recall</span><span class="kpi-value mono">72%</span><span class="kpi-change up">↑ 18pp in target segment</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="kpi-body"><span class="kpi-label">Campaign ROI</span><span class="kpi-value mono">4.2x</span><span class="kpi-change up">₹4.2 revenue per ₹1 spent</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="kpi-body"><span class="kpi-label">Social Following</span><span class="kpi-value mono">2.4M</span><span class="kpi-change up">↑ 156% this quarter</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><div class="kpi-body"><span class="kpi-label">Market Share</span><span class="kpi-value mono">8.7%</span><span class="kpi-change up">↑ 2.1pp (target: 15%)</span></div></div>
+            </div>
+            <div class="two-col-grid">
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Campaign Performance</h3><span class="chart-subtitle">ROI by marketing channel</span></div></div><div class="chart-body tall"><canvas id="campaign-roi-chart"></canvas></div></div>
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Brand Sentiment Analysis</h3><span class="chart-subtitle">Social media sentiment over time</span></div></div><div class="chart-body tall"><canvas id="sentiment-chart"></canvas></div></div>
+            </div>
+            <div class="two-col-grid">
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Competitor Landscape</h3><span class="chart-subtitle">Market share comparison</span></div></div><div class="chart-body"><canvas id="competitor-chart"></canvas></div></div>
+                <div class="card"><div class="card-header"><h3 class="card-title">🎯 Active Campaigns</h3></div><div class="campaign-list" id="campaign-list"></div></div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECTION: FINANCE
+             ═══════════════════════════════════════════════════════════════════ -->
+        <section class="section" id="section-finance">
+            <div class="kpi-grid-4">
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="kpi-body"><span class="kpi-label">Gross Revenue (YTD)</span><span class="kpi-value mono">₹247 Cr</span><span class="kpi-change up">↑ 34% YoY growth</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="kpi-body"><span class="kpi-label">Gross Margin</span><span class="kpi-value mono">42.8%</span><span class="kpi-change up">↑ 3.1pp improvement</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/></svg></div><div class="kpi-body"><span class="kpi-label">EBITDA Margin</span><span class="kpi-value mono">18.3%</span><span class="kpi-change up">Industry avg: 12%</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-cyan"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div><div class="kpi-body"><span class="kpi-label">Burn Rate</span><span class="kpi-value mono">₹1.8 Cr/mo</span><span class="kpi-change up">Runway: 14 months</span></div></div>
+            </div>
+            <div class="two-col-grid">
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">P&L Waterfall</h3><span class="chart-subtitle">Revenue to net profit breakdown</span></div></div><div class="chart-body tall"><canvas id="pnl-waterfall-chart"></canvas></div></div>
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Cost Structure</h3><span class="chart-subtitle">Operating expense breakdown</span></div></div><div class="chart-body tall"><canvas id="cost-structure-chart"></canvas></div></div>
+            </div>
+            <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Revenue vs Expenses — Monthly Trend</h3><span class="chart-subtitle">Path to profitability</span></div></div><div class="chart-body"><canvas id="rev-vs-expense-chart"></canvas></div></div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECTION: AI HUB
+             ═══════════════════════════════════════════════════════════════════ -->
+        <section class="section" id="section-ai-hub">
+            <div class="kpi-grid-4">
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="kpi-body"><span class="kpi-label">Demand Forecast Accuracy</span><span class="kpi-value mono">91.7%</span><span class="kpi-change up">XGBoost Ensemble v0.3</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div class="kpi-body"><span class="kpi-label">Vision Model (YOLO)</span><span class="kpi-value mono">94.3% mAP</span><span class="kpi-change up">48 SKU detection classes</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="kpi-body"><span class="kpi-label">Photos Processed Today</span><span class="kpi-value mono">3,421</span><span class="kpi-change up">Avg inference: 142ms</span></div></div>
+                <div class="kpi-card"><div class="kpi-icon-wrap ic-cyan"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="kpi-body"><span class="kpi-label">System Uptime</span><span class="kpi-value mono">99.97%</span><span class="kpi-change up">Last incident: 47 days ago</span></div></div>
+            </div>
+            <div class="two-col-grid">
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">🧠 AI Demand Forecast — Next 24 Hours</h3><span class="chart-subtitle">XGBoost Ensemble · 95% confidence band</span></div><div class="model-info"><span class="model-badge">XGBoost</span><span class="model-badge">LSTM</span><span class="model-badge accent">Ensemble</span></div></div><div class="chart-body tall"><canvas id="ai-forecast-chart"></canvas></div></div>
+                <div class="stack-cards">
+                    <div class="card"><div class="card-header"><h3 class="card-title">📊 Feature Importance</h3></div><div class="feature-list" id="feature-importance"></div></div>
+                    <div class="card"><div class="card-header"><h3 class="card-title">🎯 Model Metrics</h3></div><div class="metrics-grid"><div class="metric-item"><span class="metric-value">91.7%</span><span class="metric-label">Accuracy</span></div><div class="metric-item"><span class="metric-value">8.3%</span><span class="metric-label">MAPE</span></div><div class="metric-item"><span class="metric-value">0.94</span><span class="metric-label">R² Score</span></div><div class="metric-item"><span class="metric-value">142ms</span><span class="metric-label">Inference</span></div></div></div>
+                </div>
+            </div>
+            <div class="two-col-grid">
+                <div class="chart-card"><div class="chart-header"><div class="chart-title-group"><h3 class="chart-title">Weather × Demand Correlation</h3><span class="chart-subtitle">Temperature drives up to 42% demand variance</span></div></div><div class="chart-body"><canvas id="weather-demand-chart"></canvas></div></div>
+                <div class="card tech-stack-card"><div class="card-header"><h3 class="card-title">🏗️ Tech Stack</h3></div><div class="tech-stack" id="tech-stack"></div></div>
+            </div>
+
+            <!-- YOLO SKU Sandbox -->
+            <div class="card yolo-sandbox-card" style="margin-top: 14px;">
+                <div class="card-header flex-header">
+                    <div class="card-title-group">
+                        <h3 class="card-title">👁️ YOLO v11 SKU Detection Sandbox</h3>
+                        <span class="card-subtitle">Simulate real-time edge computer vision SKU detection inside retail freezer chests</span>
+                    </div>
+                    <div class="sandbox-controls">
+                        <button class="btn active" id="btn-well-stocked">Well Stocked</button>
+                        <button class="btn" id="btn-low-stock">Low Stock</button>
+                        <button class="btn" id="btn-stockout">Stockout Alert</button>
+                        <button class="btn btn-primary" id="btn-run-yolo">⚡ Run YOLO Scanner</button>
+                    </div>
+                </div>
+                <div class="sandbox-body">
+                    <div class="freezer-display-wrap">
+                        <div class="freezer-display" id="freezer-display">
+                            <img src="freezer-well-stocked.png" id="freezer-img" alt="Freezer Chest">
+                            <div class="yolo-scanner" id="yolo-scanner"></div>
+                            <div class="detection-overlay" id="detection-overlay"></div>
+                        </div>
+                    </div>
+                    <div class="sandbox-results">
+                        <div class="inference-stats">
+                            <div class="inf-stat">
+                                <span class="inf-label">Inference Latency</span>
+                                <span class="inf-value mono text-cyan" id="inf-latency">—</span>
+                            </div>
+                            <div class="inf-stat">
+                                <span class="inf-label">SKUs Counted</span>
+                                <span class="inf-value mono text-green" id="inf-count">—</span>
+                            </div>
+                            <div class="inf-stat">
+                                <span class="inf-label">Confidence Mean</span>
+                                <span class="inf-value mono text-purple" id="inf-confidence">—</span>
+                            </div>
+                        </div>
+                        <div class="detected-items-card">
+                            <h4 class="details-title">📊 Object Inventory Audit</h4>
+                            <div class="detected-items-list" id="detected-items">
+                                <span class="placeholder-text">Select a freezer state above and click "Run YOLO Scanner" to start analysis.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECTION: LIVE MAP
+             ═══════════════════════════════════════════════════════════════════ -->
+        <section class="section" id="section-live-map">
+            <div class="map-container">
+                <div class="map-overlay">
+                    <div class="map-stats"><div class="map-stat"><span class="map-stat-value green">7,823</span><span class="map-stat-label">Active</span></div><div class="map-stat"><span class="map-stat-value orange">584</span><span class="map-stat-label">Low Stock</span></div><div class="map-stat"><span class="map-stat-value red">140</span><span class="map-stat-label">Offline</span></div></div>
+                    <div class="map-legend"><div class="legend-item"><span class="legend-dot green"></span> Active</div><div class="legend-item"><span class="legend-dot orange"></span> Low Stock</div><div class="legend-item"><span class="legend-dot red"></span> Offline</div><div class="legend-item"><span class="legend-dot blue"></span> Warehouse</div></div>
+                </div>
+                <div id="live-map"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
