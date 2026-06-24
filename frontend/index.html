@@ -90,6 +90,9 @@
                 </div>
             </div>
             <div class="top-bar-right">
+                <button class="btn" id="btn-open-ingest" style="background: rgba(63, 185, 80, 0.12); color: var(--accent-green); border: 1px solid rgba(63, 185, 80, 0.2); font-weight: 600; display: flex; align-items: center; gap: 5px; height: 32px; padding: 0 12px; font-size: 11px;">
+                    <span>🔌</span> Ingest Real Data
+                </button>
                 <div class="weather-widget"><span class="weather-icon">☀️</span><span class="weather-temp">38°C</span><span class="weather-label">Hyderabad</span><span class="weather-impact positive">+42% demand</span></div>
                 <div class="live-indicator"><span class="live-dot"></span><span class="live-text">Live</span></div>
                 <button class="notification-btn" id="notification-btn">
@@ -523,6 +526,47 @@
             </div>
         </section>
     </main>
+
+    <!-- Real Data Ingestion Modal -->
+    <div class="modal-overlay" id="ingest-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-card" style="background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius-lg); width: 100%; max-width: 650px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-lg); transition: transform 0.3s ease;">
+            <div class="modal-header" style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 18px;">🔌</span> Real-Data Ingest & Conversion Engine
+                </h3>
+                <button id="btn-close-ingest" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px;">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;">
+                <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4; margin: 0;">
+                    Paste actual operator data (copy-pasted directly from Excel, CSV, or raw JSON). The ingestion engine will auto-detect formats, categorize conditions (melt-risk, stock levels), and map them directly into our orchestrator and live operations display.
+                </p>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Input Raw Data (Excel/TSV/CSV/JSON):</label>
+                    <textarea id="raw-data-input" placeholder="Paste data here..." style="width: 100%; height: 180px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); color: var(--text-primary); font-family: var(--font-mono); font-size: 10px; padding: 10px; resize: none; outline: none;"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" id="btn-load-excel-demo" style="flex: 1; font-size: 10px; padding: 8px 0;">📋 Load Excel Demo Table</button>
+                    <button class="btn" id="btn-load-json-demo" style="flex: 1; font-size: 10px; padding: 8px 0;">📋 Load JSON Demo</button>
+                </div>
+
+                <!-- Auto-Conversion Output Log Preview -->
+                <div id="conversion-preview" style="display: none; background: rgba(63, 185, 80, 0.05); border: 1px solid rgba(63, 185, 80, 0.15); border-radius: var(--radius-sm); padding: 12px; font-size: 11px;">
+                    <h4 style="color: var(--accent-green); font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 11px;">
+                        <span>✓</span> Conversion Success (Auto-Detected)
+                    </h4>
+                    <div id="conversion-preview-details" style="color: var(--text-secondary); line-height: 1.5; font-family: var(--font-mono); font-size: 9px; max-height: 100px; overflow-y: auto;">
+                        <!-- Populate dynamically -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 14px 20px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn" id="btn-cancel-ingest">Cancel</button>
+                <button class="btn btn-primary" id="btn-submit-ingest" style="background: var(--gradient-green); box-shadow: 0 4px 12px rgba(63,185,80,0.2);">🚀 Map & Solve Data</button>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>

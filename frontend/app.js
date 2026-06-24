@@ -95,6 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Wire Interactive Storyboard Tour
     initStoryboard();
 
+    // Wire Real-Data Ingestion Modal
+    initIngestionModal();
+
     // Auto-update dashboard metrics periodically
     setInterval(liveUpdate, 4500);
 });
@@ -260,6 +263,8 @@ function initAlertFeed() {
 let map = null;
 let storyCartMarker = null;
 
+let cartLayerGroup = null;
+
 function initMap() {
     if (typeof L === 'undefined') return;
     if (map) return;
@@ -276,38 +281,10 @@ function initMap() {
         layers: [lightMap]
     });
 
-    const statuses = ['active','active','active','active','active','low-stock','low-stock','offline'];
-    
-    // Seed 120 random push cart coordinates around Hyderabad
-    for (let i = 0; i < 120; i++) {
-        const lat = 17.3912 + (Math.random() - 0.5) * 0.12;
-        const lng = 78.4867 + (Math.random() - 0.5) * 0.15;
-        const status = pick(statuses);
-        const size = status === 'active' ? 7 : status === 'low-stock' ? 9 : 5;
-        const icon = L.divIcon({ className: `cart-marker ${status}`, iconSize: [size, size] });
-        const marker = L.marker([lat, lng], { icon }).addTo(map);
-        const stock = status === 'active' ? rand(40, 100) : status === 'low-stock' ? rand(3, 20) : 0;
-        const sc = status === 'active' ? COLORS.green : status === 'low-stock' ? COLORS.orange : COLORS.red;
-        const sl = status === 'active' ? 'Active' : status === 'low-stock' ? 'Low Stock' : 'Offline';
-        marker.bindPopup(`
-            <div class="popup-header">🛒 Cart JC-${String(i + 1001).padStart(4, '0')}</div>
-            <div class="popup-detail"><b>Vendor:</b> ${pick(VENDORS)}</div>
-            <div class="popup-detail"><b>Area:</b> ${pick(AREAS)}</div>
-            <div class="popup-detail"><b>Stock:</b> ${stock} units</div>
-            <div class="popup-detail"><b>Status:</b> <span class="popup-status" style="background:${sc}22;color:${sc}">${sl}</span></div>
-        `, { maxWidth: 220 });
-    }
+    cartLayerGroup = L.layerGroup().addTo(map);
 
-    // Storyboard Specific Cart (Low stock near Uppal Stadium)
-    const storyIcon = L.divIcon({ className: 'cart-marker low-stock', iconSize: [9, 9] });
-    storyCartMarker = L.marker([17.3920, 78.5510], { icon: storyIcon }).addTo(map);
-    storyCartMarker.bindPopup(`
-        <div class="popup-header">🛒 Cart JC-6890 (Uppal Stadium)</div>
-        <div class="popup-detail"><b>Vendor:</b> Raju Kumar</div>
-        <div class="popup-detail"><b>Status:</b> <span class="popup-status" style="background:${COLORS.orange}22;color:${COLORS.orange}">Low Stock</span></div>
-        <div class="popup-detail"><b>Stock:</b> 4 units (Mango Kulfi)</div>
-        <div class="popup-detail"><b>Refill Queue:</b> Auto-queued</div>
-    `, { maxWidth: 220 });
+    // Initial render of default seeded carts
+    renderCartsData(getInitialCartsData());
 
     // Custom Hyderabad Landmark Pins
     const landmarks = [
@@ -1231,4 +1208,324 @@ function liveUpdate() {
         const valCmdAssets = document.getElementById('val-cmd-active-assets');
         if (valCmdAssets) valCmdAssets.textContent = EXP_STATE.totalAssets.toLocaleString('en-IN');
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL-DATA INGESTION & CONVERSION ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function getInitialCartsData() {
+    const statuses = ['active','active','active','active','active','low-stock','low-stock','offline'];
+    const data = [];
+    for (let i = 0; i < 120; i++) {
+        const status = pick(statuses);
+        const stock = status === 'active' ? rand(40, 100) : status === 'low-stock' ? rand(3, 20) : 0;
+        const temp = status === 'active' ? -21.5 + (Math.random() - 0.5) * 2 : status === 'low-stock' ? -18.5 + (Math.random() - 0.5) * 4 : 0.0 + (Math.random() - 0.5) * 1.5;
+        data.push({
+            cartId: `JC-${String(i + 1001).padStart(4, '0')}`,
+            vendorName: pick(VENDORS),
+            area: pick(AREAS),
+            stockLevel: stock,
+            freezerTemp: parseFloat(temp.toFixed(1))
+        });
+    }
+    // Add specific storyboard cart
+    data.push({
+        cartId: 'JC-6890',
+        vendorName: 'Raju Kumar',
+        area: 'Uppal Hub',
+        stockLevel: 4,
+        freezerTemp: -14.5
+    });
+    return data;
+}
+
+function renderCartsData(carts) {
+    if (!cartLayerGroup) return;
+    cartLayerGroup.clearLayers();
+
+    // Standard coordinate offsets based on area index
+    const areaCoords = {
+        'Jubilee Hills': [17.43, 78.40],
+        'Banjara Hills': [17.41, 78.43],
+        'Hitech City': [17.44, 78.37],
+        'Gachibowli': [17.42, 78.34],
+        'Madhapur': [17.43, 78.38],
+        'Kukatpally': [17.48, 78.39],
+        'Ameerpet': [17.43, 78.44],
+        'Secunderabad': [17.44, 78.49],
+        'Uppal': [17.39, 78.55],
+        'Charminar': [17.36, 78.47],
+        'Uppal Hub': [17.3920, 78.5510]
+    };
+
+    let activeCount = 0;
+    let lowCount = 0;
+    let offlineCount = 0;
+
+    carts.forEach((cart, i) => {
+        let status = 'active';
+        if (cart.freezerTemp > -12 || cart.stockLevel <= 0) {
+            status = 'offline';
+        } else if (cart.stockLevel <= 20) {
+            status = 'low-stock';
+        }
+
+        if (status === 'active') activeCount++;
+        else if (status === 'low-stock') lowCount++;
+        else offlineCount++;
+
+        let lat, lng;
+        const base = areaCoords[cart.area] || [17.3912, 78.4867];
+        if (cart.cartId === 'JC-6890') {
+            lat = 17.3920;
+            lng = 78.5510;
+        } else {
+            lat = base[0] + (Math.random() - 0.5) * 0.05;
+            lng = base[1] + (Math.random() - 0.5) * 0.05;
+        }
+
+        const size = status === 'active' ? 7 : status === 'low-stock' ? 9 : 5;
+        const icon = L.divIcon({ className: `cart-marker ${status}`, iconSize: [size, size] });
+        const marker = L.marker([lat, lng], { icon });
+        
+        let condText = '';
+        let solText = '';
+        if (status === 'active') {
+            condText = `<span style="color:${COLORS.green};font-weight:700;">STABLE</span> (Compliant temp & stock)`;
+            solText = 'Normal operation. Planogram aligned.';
+        } else if (status === 'low-stock') {
+            condText = `<span style="color:${COLORS.orange};font-weight:700;">LOW STOCK WARNING</span> (${cart.stockLevel} units)`;
+            solText = 'Auto-refill queued. Suggested minor realign.';
+        } else {
+            if (cart.freezerTemp > -12) {
+                condText = `<span style="color:${COLORS.red};font-weight:700;">MELT-RISK CRITICAL</span> (${cart.freezerTemp}°C)`;
+                solText = 'Urgent markdown promo code generated + recovery dispatch.';
+            } else {
+                condText = `<span style="color:${COLORS.red};font-weight:700;">STOCKOUT CRITICAL</span> (0 units)`;
+                solText = 'Refill van dispatched.';
+            }
+        }
+
+        marker.bindPopup(`
+            <div class="popup-header">🛒 Cart ${cart.cartId}</div>
+            <div class="popup-detail"><b>Vendor:</b> ${cart.vendorName}</div>
+            <div class="popup-detail"><b>Area:</b> ${cart.area}</div>
+            <div class="popup-detail"><b>Current Telemetry:</b> Stock: ${cart.stockLevel} · Temp: ${cart.freezerTemp}°C</div>
+            <div class="popup-detail" style="border-top:1px solid rgba(255,255,255,0.05); padding-top:6px; margin-top:6px;"><b>Condition:</b> ${condText}</div>
+            <div class="popup-detail"><b>Automated Solution:</b> <span class="text-cyan" style="font-weight:600;">${solText}</span></div>
+        `, { maxWidth: 260 });
+
+        marker.addTo(cartLayerGroup);
+
+        if (cart.cartId === 'JC-6890') {
+            storyCartMarker = marker;
+        }
+    });
+
+    const activeOverlay = document.getElementById('ops-map-active');
+    const lowOverlay = document.getElementById('ops-map-low');
+    const offlineOverlay = document.getElementById('ops-map-offline');
+    if (activeOverlay) activeOverlay.textContent = activeCount;
+    if (lowOverlay) lowOverlay.textContent = lowCount;
+    if (offlineOverlay) offlineOverlay.textContent = offlineCount;
+
+    const valOpsCarts = document.getElementById('val-ops-active-carts');
+    if (valOpsCarts) valOpsCarts.textContent = carts.length.toLocaleString('en-IN');
+}
+
+function parseRawData(text) {
+    text = text.trim();
+    if (!text) return null;
+
+    if (text.startsWith('[') || text.startsWith('{')) {
+        try {
+            const data = JSON.parse(text);
+            return Array.isArray(data) ? data : [data];
+        } catch (e) {
+            // fallback
+        }
+    }
+
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length < 2) return null;
+
+    const headerLine = lines[0];
+    let delimiter = ',';
+    if (headerLine.includes('\t')) delimiter = '\t';
+    else if (headerLine.includes(';')) delimiter = ';';
+
+    const headers = headerLine.split(delimiter).map(h => h.trim().toLowerCase());
+    
+    const fieldMapping = {
+        'cart': 'cartId', 'cart id': 'cartId', 'id': 'cartId', 'cart_id': 'cartId',
+        'vendor': 'vendorName', 'vendor name': 'vendorName', 'name': 'vendorName', 'operator': 'vendorName',
+        'area': 'area', 'location': 'area', 'zone': 'area',
+        'stock': 'stockLevel', 'stock level': 'stockLevel', 'qty': 'stockLevel', 'quantity': 'stockLevel',
+        'temp': 'freezerTemp', 'temperature': 'freezerTemp', 'freezer temp': 'freezerTemp', 'freezer_temp': 'freezerTemp'
+    };
+
+    const parsedRows = [];
+    for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(delimiter).map(c => c.trim());
+        if (cols.length < headers.length) continue;
+        
+        const row = {};
+        headers.forEach((header, idx) => {
+            const standardField = fieldMapping[header] || header;
+            let val = cols[idx];
+            
+            if (standardField === 'stockLevel' || standardField === 'freezerTemp') {
+                val = parseFloat(val);
+                if (isNaN(val)) val = 0;
+            }
+            row[standardField] = val;
+        });
+        parsedRows.push(row);
+    }
+    return parsedRows;
+}
+
+function initIngestionModal() {
+    const btnOpen = document.getElementById('btn-open-ingest');
+    const btnClose = document.getElementById('btn-close-ingest');
+    const btnCancel = document.getElementById('btn-cancel-ingest');
+    const btnSubmit = document.getElementById('btn-submit-ingest');
+    const modal = document.getElementById('ingest-modal');
+    
+    const btnExcel = document.getElementById('btn-load-excel-demo');
+    const btnJSON = document.getElementById('btn-load-json-demo');
+    const txtInput = document.getElementById('raw-data-input');
+    const previewDiv = document.getElementById('conversion-preview');
+    const previewDetails = document.getElementById('conversion-preview-details');
+
+    if (!btnOpen || !modal) return;
+
+    btnOpen.addEventListener('click', (e) => {
+        e.preventDefault();
+        modal.style.display = 'flex';
+        previewDiv.style.display = 'none';
+    });
+
+    const hideModal = () => {
+        modal.style.display = 'none';
+    };
+
+    btnClose.addEventListener('click', hideModal);
+    btnCancel.addEventListener('click', hideModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) hideModal();
+    });
+
+    btnExcel.addEventListener('click', (e) => {
+        e.preventDefault();
+        txtInput.value = "Cart ID\tVendor Name\tArea\tStock Level\tFreezer Temp\nJC-9001\tAli Khan\tGachibowli\t8\t-11.5\nJC-9002\tMohd Rafi\tCharminar\t72\t-21.0\nJC-9003\tSai Kumar\tUppal Hub\t3\t-2.0\nJC-9004\tPriya Sen\tJubilee Hills\t95\t-22.0\nJC-9005\tRam Prasad\tMadhapur\t12\t-19.5";
+        previewDiv.style.display = 'none';
+    });
+
+    btnJSON.addEventListener('click', (e) => {
+        e.preventDefault();
+        txtInput.value = JSON.stringify([
+            {"cartId": "JC-9001", "vendorName": "Ali Khan", "area": "Gachibowli", "stockLevel": 8, "freezerTemp": -11.5},
+            {"cartId": "JC-9002", "vendorName": "Mohd Rafi", "area": "Charminar", "stockLevel": 72, "freezerTemp": -21.0},
+            {"cartId": "JC-9003", "vendorName": "Sai Kumar", "area": "Uppal Hub", "stockLevel": 3, "freezerTemp": -2.0},
+            {"cartId": "JC-9004", "vendorName": "Priya Sen", "area": "Jubilee Hills", "stockLevel": 95, "freezerTemp": -22.0},
+            {"cartId": "JC-9005", "vendorName": "Ram Prasad", "area": "Madhapur", "stockLevel": 12, "freezerTemp": -19.5}
+        ], null, 2);
+        previewDiv.style.display = 'none';
+    });
+
+    btnSubmit.addEventListener('click', (e) => {
+        e.preventDefault();
+        const text = txtInput.value;
+        const parsed = parseRawData(text);
+        if (!parsed || parsed.length === 0) {
+            alert('Could not parse raw data. Please check column headers or JSON formatting.');
+            return;
+        }
+
+        // Show conversion details
+        previewDiv.style.display = 'block';
+        previewDetails.innerHTML = parsed.map(c => `Cart ${c.cartId || 'N/A'}: Operator=${c.vendorName || 'N/A'}, Zone=${c.area || 'N/A'}, Stock=${c.stockLevel} units, Temp=${c.freezerTemp}°C`).join('<br>');
+
+        setTimeout(() => {
+            // Re-render map with custom parsed carts
+            initMap();
+            renderCartsData(parsed);
+            
+            // Push alert to Command Center alerts feed
+            const cmdFeed = document.getElementById('alert-feed');
+            if (cmdFeed) {
+                const low = parsed.filter(c => c.stockLevel <= 20).length;
+                const melt = parsed.filter(c => c.freezerTemp > -12).length;
+                cmdFeed.insertAdjacentHTML('afterbegin', `
+                    <div class="alert-item success">
+                        <span class="alert-icon">🔌</span>
+                        <div class="alert-body">
+                            <div class="alert-title">Real-Data Ingest Completed</div>
+                            <div class="alert-detail">Parsed ${parsed.length} raw records. Mapped to live carts. ${low} low stock and ${melt} temperature warnings resolved.</div>
+                        </div>
+                        <span class="alert-time">Just now</span>
+                    </div>
+                `);
+            }
+
+            // Push warnings to Refill dispatch queue
+            const refillFeed = document.getElementById('supply-refill-feed');
+            if (refillFeed) {
+                const items = parsed.filter(c => c.stockLevel <= 20).map(c => {
+                    const priority = c.stockLevel <= 0 || c.freezerTemp > -12 ? 'critical' : c.stockLevel <= 10 ? 'high' : 'medium';
+                    const icon = priority === 'critical' ? '🚨' : priority === 'high' ? '⚠️' : '📦';
+                    return `
+                        <div class="refill-item ${priority}">
+                            <span style="font-size:16px">${icon}</span>
+                            <div class="refill-content">
+                                <div class="refill-title"><span class="priority-badge ${priority}">${priority}</span> Cart ${c.cartId} · ${c.vendorName}</div>
+                                <div class="refill-details">${c.area} · Auto-Refill Solved & Scheduled</div>
+                            </div>
+                            <span class="refill-time">Just now</span>
+                        </div>`;
+                });
+                refillFeed.innerHTML = items.length > 0 ? items.join('') : '<div class="alert-item success" style="border-left-color:var(--accent-green);"><div class="alert-title">All Carts Stable</div><div class="alert-detail">No refills queued from ingested dataset.</div></div>';
+            }
+
+            // Push actions to Melt-Risk Action feed
+            const actionsFeed = document.getElementById('orchestrator-actions-feed');
+            const badge = document.getElementById('orch-action-count');
+            if (actionsFeed) {
+                const warningCarts = parsed.filter(c => c.freezerTemp > -12 || c.stockLevel <= 20);
+                const actions = warningCarts.map((c, idx) => {
+                    const type = c.freezerTemp > -12 ? 'critical' : 'warning';
+                    const emoji = c.freezerTemp > -12 ? '🚨' : '⚠️';
+                    const title = c.freezerTemp > -12 ? `Melt-Risk Alert: Cart ${c.cartId}` : `Low Stock Alert: Cart ${c.cartId}`;
+                    const desc = c.freezerTemp > -12 ? `Freezer temp is ${c.freezerTemp}°C (operator ${c.vendorName}). Suggest markdown and thermal routing.` : `Stock is ${c.stockLevel} units (operator ${c.vendorName}). Queue auto-refill.`;
+                    const btnText = c.freezerTemp > -12 ? 'Deploy Thermal Recovery' : 'Approve Refill Route';
+                    return `
+                        <div class="alert-item ${type}" id="ingest-act-${idx}">
+                            <span class="alert-icon">${emoji}</span>
+                            <div class="alert-body">
+                                <div class="alert-title" style="font-weight: 700;">${title}</div>
+                                <div class="alert-detail" style="margin-bottom: 8px;">${desc}</div>
+                                <button class="btn-action-execute" onclick="executeOrchestratorAction('ingest-act-${idx}', '${title}')">${btnText}</button>
+                            </div>
+                            <span class="alert-time">Real-Data</span>
+                        </div>`;
+                });
+                actionsFeed.innerHTML = actions.length > 0 ? actions.join('') : '<div class="alert-item success" style="border-left-color:var(--accent-green);"><div class="alert-title">All Freezers Stable</div><div class="alert-detail">No warning telemetry detected in ingested dataset.</div></div>';
+                if (badge) {
+                    badge.textContent = `${warningCarts.length} Action${warningCarts.length !== 1 ? 's' : ''} Pending`;
+                    badge.className = warningCarts.length > 0 ? 'card-badge alert-card' : 'card-badge pulse-badge';
+                }
+            }
+
+            // Sync Command Center KPI total assets to mapped count
+            EXP_STATE.totalAssets = parsed.length;
+            const valCmdAssets = document.getElementById('val-cmd-active-assets');
+            if (valCmdAssets) valCmdAssets.textContent = EXP_STATE.totalAssets.toLocaleString('en-IN');
+
+            hideModal();
+            showOrchToast('Data Ingested', `Successfully mapped and resolved ${parsed.length} carts!`);
+            navTo('operations');
+        }, 1200);
+    });
 }
