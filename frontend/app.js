@@ -8,20 +8,22 @@ const COLORS = {
     orange: '#d29922', cyan: '#39d2c0', pink: '#f778ba', gray: '#6e7681',
 };
 
-// Chart.js defaults
-Chart.defaults.color = '#8b949e';
-Chart.defaults.borderColor = 'rgba(255,255,255,0.03)';
-Chart.defaults.font.family = "'Inter', sans-serif";
-Chart.defaults.font.size = 10;
-Chart.defaults.plugins.legend.labels.usePointStyle = true;
-Chart.defaults.plugins.legend.labels.pointStyleWidth = 8;
-Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(6,8,15,0.95)';
-Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,0.08)';
-Chart.defaults.plugins.tooltip.borderWidth = 1;
-Chart.defaults.plugins.tooltip.cornerRadius = 8;
-Chart.defaults.plugins.tooltip.padding = 10;
-Chart.defaults.elements.point.radius = 0;
-Chart.defaults.elements.point.hoverRadius = 4;
+// Chart.js defaults (wrapped in safe check for offline fallback)
+if (typeof Chart !== 'undefined') {
+    Chart.defaults.color = '#8b949e';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.03)';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.font.size = 10;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.legend.labels.pointStyleWidth = 8;
+    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(6,8,15,0.95)';
+    Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,0.08)';
+    Chart.defaults.plugins.tooltip.borderWidth = 1;
+    Chart.defaults.plugins.tooltip.cornerRadius = 8;
+    Chart.defaults.plugins.tooltip.padding = 10;
+    Chart.defaults.elements.point.radius = 0;
+    Chart.defaults.elements.point.hoverRadius = 4;
+}
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -186,6 +188,7 @@ function animateKPIs() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function initRevenueTrajectory() {
+    if (typeof Chart === 'undefined') return;
     const ctx = document.getElementById('revenue-trajectory-chart');
     if (!ctx) return;
     const months = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
@@ -258,6 +261,7 @@ let map = null;
 let storyCartMarker = null;
 
 function initMap() {
+    if (typeof L === 'undefined') return;
     if (map) return;
 
     const lightMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -337,6 +341,7 @@ function initMap() {
 }
 
 function initColdChainChart() {
+    if (typeof Chart === 'undefined') return;
     const ctx = document.getElementById('cold-chain-chart');
     if (!ctx) return;
     const labels = hourLabels(24);
@@ -587,6 +592,7 @@ function updateOrchestratorState() {
 }
 
 function updateOrchestratorDecayChart(temp, telemetry) {
+    if (typeof Chart === 'undefined') return;
     const ctx = document.getElementById('orchestrator-decay-chart');
     if (!ctx) return;
 
@@ -848,6 +854,7 @@ function updateExpansionKPIs() {
 }
 
 function initExpansionChart() {
+    if (typeof Chart === 'undefined') return;
     const ctx = document.getElementById('expansion-growth-chart');
     if (!ctx) return;
 
