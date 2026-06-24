@@ -87,6 +87,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }).observe(document.getElementById('section-live-map'), { attributes: true });
 
+    // Orchestrator (lazy)
+    let orchInit = false;
+    new MutationObserver(() => {
+        if (document.getElementById('section-orchestrator')?.classList.contains('active') && !orchInit) {
+            setTimeout(initOrchestrator, 100);
+            orchInit = true;
+        }
+    }).observe(document.getElementById('section-orchestrator'), { attributes: true });
+
     // Domain card clicks
     document.querySelectorAll('.domain-card').forEach(card => {
         card.addEventListener('click', () => {
@@ -119,6 +128,7 @@ function navTo(key) {
         'finance': ['Finance', 'Revenue, margins, costs & path to profitability'],
         'ai-hub': ['AI Hub', 'Demand forecasting, vision models & tech infrastructure'],
         'live-map': ['Live Cart Map', 'Track 8,500+ push carts across the city in real-time'],
+        'orchestrator': ['Melt-Risk & Demand Orchestrator', 'Real-time sellability scoring, adaptive flavor slotting & autonomous actions'],
     };
 
     items.forEach(i => {
@@ -1146,6 +1156,24 @@ const storyboardSteps = [
                 feed.insertAdjacentHTML('afterbegin', newAlertHTML);
             }
         }
+    },
+    {
+        title: "Step 7: Autonomous Sellability & Flavor Orchestration (Orchestrator)",
+        text: "The Orchestrator actively aligns freezer layouts to weather/event demand. Try changing temperature or neighborhood in the simulator to see flavor slots dynamically adjust and actions deploy!",
+        role: "company",
+        section: "orchestrator",
+        highlightClass: "orchestrator-config-card",
+        action: () => {
+            const tempInput = document.getElementById('orch-input-temp');
+            const teleInput = document.getElementById('orch-input-telemetry');
+            if (tempInput && teleInput) {
+                tempInput.value = 40;
+                teleInput.value = 'strain';
+                // Trigger change events manually
+                tempInput.dispatchEvent(new Event('input'));
+                teleInput.dispatchEvent(new Event('change'));
+            }
+        }
     }
 ];
 
@@ -1261,4 +1289,483 @@ function clearHighlights() {
     document.querySelectorAll('.story-highlight').forEach(el => {
         el.classList.remove('story-highlight');
     });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ORCHESTRATOR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let orchestratorDecayChart = null;
+let savedSpoilageRevenue = 48200;
+
+function initOrchestrator() {
+    const tempInput = document.getElementById('orch-input-temp');
+    const humInput = document.getElementById('orch-input-humidity');
+    const neighInput = document.getElementById('orch-input-neighborhood');
+    const teleInput = document.getElementById('orch-input-telemetry');
+
+    if (!tempInput) return;
+
+    // Attach listeners
+    tempInput.addEventListener('input', updateOrchestratorState);
+    humInput.addEventListener('input', updateOrchestratorState);
+    neighInput.addEventListener('change', updateOrchestratorState);
+    teleInput.addEventListener('change', updateOrchestratorState);
+
+    updateOrchestratorState();
+}
+
+function updateOrchestratorState() {
+    const temp = parseInt(document.getElementById('orch-input-temp').value);
+    const humidity = parseInt(document.getElementById('orch-input-humidity').value);
+    const neighborhood = document.getElementById('orch-input-neighborhood').value;
+    const telemetry = document.getElementById('orch-input-telemetry').value;
+
+    // Update slider labels
+    document.getElementById('orch-lbl-temp').textContent = temp + '°C';
+    document.getElementById('orch-lbl-humidity').textContent = humidity + '%';
+
+    // 1. Calculate KPIs
+    let baseMinutes = 320;
+    if (temp > 30) baseMinutes -= (temp - 30) * 10;
+    if (humidity > 50) baseMinutes -= (humidity - 50) * 1.5;
+    
+    let telemetryMult = 1.0;
+    if (telemetry === 'strain') telemetryMult = 0.45;
+    else if (telemetry === 'outage') telemetryMult = 0.12;
+
+    let sellableMinutes = Math.max(12, Math.round(baseMinutes * telemetryMult));
+    
+    // Update Sellable Minutes KPI
+    const sellableVal = document.getElementById('val-sellable-minutes');
+    sellableVal.textContent = sellableMinutes + ' min';
+    const sellableChange = document.getElementById('change-sellable-minutes');
+    if (sellableMinutes > 200) {
+        sellableVal.style.color = 'var(--text-primary)';
+        sellableChange.textContent = 'Normal decay rate';
+        sellableChange.className = 'kpi-change up';
+    } else if (sellableMinutes > 80) {
+        sellableVal.style.color = 'var(--accent-orange)';
+        sellableChange.textContent = '⚠️ Elevated decay rate';
+        sellableChange.className = 'kpi-change down';
+    } else {
+        sellableVal.style.color = 'var(--accent-red)';
+        sellableChange.textContent = '🚨 Fast spoilage decay';
+        sellableChange.className = 'kpi-change down';
+    }
+
+    // Update Melt-Risk Alert State KPI
+    const meltVal = document.getElementById('val-melt-risk');
+    const meltChange = document.getElementById('change-melt-risk');
+    if (telemetry === 'normal') {
+        if (temp < 38) {
+            meltVal.textContent = 'STABLE';
+            meltVal.style.color = 'var(--accent-green)';
+            meltChange.textContent = 'All freezers within range';
+            meltChange.className = 'kpi-change up';
+        } else {
+            meltVal.textContent = 'ELEVATED';
+            meltVal.style.color = 'var(--accent-orange)';
+            meltChange.textContent = 'High ambient temp stress';
+            meltChange.className = 'kpi-change down';
+        }
+    } else if (telemetry === 'strain') {
+        meltVal.textContent = 'HIGH RISK';
+        meltVal.style.color = 'var(--accent-orange)';
+        meltChange.textContent = 'Compressor strain alert';
+        meltChange.className = 'kpi-change down';
+    } else {
+        meltVal.textContent = 'CRITICAL';
+        meltVal.style.color = 'var(--accent-red)';
+        meltChange.textContent = 'Power loss alert dispatched';
+        meltChange.className = 'kpi-change down';
+    }
+
+    // Update Assortment Yield KPI
+    let baseYield = 95.0;
+    if (temp > 35 && neighborhood === 'rainy-evening') baseYield -= 22.5;
+    if (temp < 25 && neighborhood === 'stadium-ipl') baseYield -= 14.2;
+    if (telemetry === 'strain') baseYield -= 8.5;
+    if (telemetry === 'outage') baseYield -= 26.0;
+    
+    let yieldVal = Math.max(45.2, baseYield + (Math.random() - 0.5) * 1.5).toFixed(1);
+    const yieldEl = document.getElementById('val-yield-efficiency');
+    yieldEl.textContent = yieldVal + '%';
+    const yieldChange = document.getElementById('change-yield-efficiency');
+    if (yieldVal > 85) {
+        yieldChange.textContent = '↑ 2.4% vs normal layout';
+        yieldChange.className = 'kpi-change up';
+    } else {
+        yieldChange.textContent = '↓ ' + (92.5 - yieldVal).toFixed(1) + '% space mismatch';
+        yieldChange.className = 'kpi-change down';
+    }
+
+    // Update Spoilage Cost Saved KPI
+    document.getElementById('val-spoilage-saved').textContent = '₹' + savedSpoilageRevenue.toLocaleString();
+
+    // 2. Adjust planogram pockets based on neighborhood/event + telemetry
+    let pockets = [];
+    
+    // Select freezer status border class
+    const gridPockets = document.getElementById('freezer-grid-pockets');
+    gridPockets.className = 'freezer-grid';
+    if (telemetry === 'strain') gridPockets.classList.add('telemetry-strain');
+    else if (telemetry === 'outage') gridPockets.classList.add('telemetry-outage');
+
+    if (telemetry === 'outage') {
+        // Meltdown mode: restrict to high margin and show melting
+        pockets = [
+            { sku: 'Vanilla Cone Classic', cat: 'cone', qty: 8, capacity: 80, demand: 'LOW', emoji: '🍦' },
+            { sku: 'Choco Bar Supreme', cat: 'bar', qty: 5, capacity: 60, demand: 'LOW', emoji: '🍫' },
+            { sku: 'Melting Mango Cup', cat: 'cup', qty: 2, capacity: 50, demand: 'LOW', emoji: '🥭' },
+            { sku: 'Melting Berry Cup', cat: 'cup', qty: 3, capacity: 50, demand: 'LOW', emoji: '🍓' },
+            { sku: 'Empty Space', cat: 'empty', qty: 0, capacity: 40, demand: 'NONE', emoji: '⏹️' },
+            { sku: 'Empty Space', cat: 'empty', qty: 0, capacity: 40, demand: 'NONE', emoji: '⏹️' },
+            { sku: 'Empty Space', cat: 'empty', qty: 0, capacity: 40, demand: 'NONE', emoji: '⏹️' },
+            { sku: 'Empty Space', cat: 'empty', qty: 0, capacity: 40, demand: 'NONE', emoji: '⏹️' },
+        ];
+    } else if (telemetry === 'strain') {
+        // Priority high margin compression
+        pockets = [
+            { sku: 'Vanilla Cone Classic', cat: 'cone', qty: 35, capacity: 80, demand: 'HIGH', emoji: '🍦' },
+            { sku: 'Vanilla Cone Classic', cat: 'cone', qty: 22, capacity: 80, demand: 'HIGH', emoji: '🍦' },
+            { sku: 'Choco Bar Supreme', cat: 'bar', qty: 45, capacity: 60, demand: 'HIGH', emoji: '🍫' },
+            { sku: 'Choco Bar Supreme', cat: 'bar', qty: 15, capacity: 60, demand: 'HIGH', emoji: '🍫' },
+            { sku: 'Mango Kulfi Cup', cat: 'cup', qty: 18, capacity: 50, demand: 'MED', emoji: '🥭' },
+            { sku: 'Matcha Green Tea Cup', cat: 'cup', qty: 12, capacity: 50, demand: 'MED', emoji: '🍵' },
+            { sku: 'Empty Space', cat: 'empty', qty: 0, capacity: 40, demand: 'NONE', emoji: '⏹️' },
+            { sku: 'Empty Space', cat: 'empty', qty: 0, capacity: 40, demand: 'NONE', emoji: '⏹️' },
+        ];
+    } else {
+        // Normal layouts by neighborhood
+        if (neighborhood === 'stadium-ipl') {
+            // Impulse sticks and cups
+            pockets = [
+                { sku: 'Vanilla Cone Classic', cat: 'cone', qty: 74, capacity: 80, demand: 'HIGH', emoji: '🍦' },
+                { sku: 'Vanilla Cone Classic', cat: 'cone', qty: 68, capacity: 80, demand: 'HIGH', emoji: '🍦' },
+                { sku: 'Choco Bar Supreme', cat: 'bar', qty: 58, capacity: 60, demand: 'HIGH', emoji: '🍫' },
+                { sku: 'Choco Bar Supreme', cat: 'bar', qty: 52, capacity: 60, demand: 'HIGH', emoji: '🍫' },
+                { sku: 'Mango Kulfi Cup', cat: 'cup', qty: 47, capacity: 50, demand: 'HIGH', emoji: '🥭' },
+                { sku: 'Wild Berry Sorbet Cup', cat: 'cup', qty: 44, capacity: 50, demand: 'HIGH', emoji: '🍓' },
+                { sku: 'Vanilla Cup Classic', cat: 'cup', qty: 38, capacity: 50, demand: 'MED', emoji: '🍨' },
+                { sku: 'Matcha Green Tea Cup', cat: 'cup', qty: 35, capacity: 50, demand: 'MED', emoji: '🍵' },
+            ];
+        } else if (neighborhood === 'rainy-evening') {
+            // Family tubs, compress single cups
+            pockets = [
+                { sku: 'Chocolate Family Tub', cat: 'tub', qty: 26, capacity: 30, demand: 'HIGH', emoji: '🍨' },
+                { sku: 'Butterscotch Family Tub', cat: 'tub', qty: 22, capacity: 30, demand: 'HIGH', emoji: '🍨' },
+                { sku: 'Vanilla Cone Classic', cat: 'cone', qty: 15, capacity: 80, demand: 'LOW', emoji: '🍦' },
+                { sku: 'Choco Bar Supreme', cat: 'bar', qty: 12, capacity: 60, demand: 'LOW', emoji: '🍫' },
+                { sku: 'Reduced Space', cat: 'empty', qty: 0, capacity: 40, demand: 'NONE', emoji: '⏹️' },
+                { sku: 'Reduced Space', cat: 'empty', qty: 0, capacity: 40, demand: 'NONE', emoji: '⏹️' },
+                { sku: 'Reduced Space', cat: 'empty', qty: 0, capacity: 40, demand: 'NONE', emoji: '⏹️' },
+                { sku: 'Reduced Space', cat: 'empty', qty: 0, capacity: 40, demand: 'NONE', emoji: '⏹️' },
+            ];
+        } else if (neighborhood === 'corporate-hotspot') {
+            // High impulse cones/bars
+            pockets = [
+                { sku: 'Vanilla Cone Classic', cat: 'cone', qty: 62, capacity: 80, demand: 'HIGH', emoji: '🍦' },
+                { sku: 'Vanilla Cone Classic', cat: 'cone', qty: 54, capacity: 80, demand: 'HIGH', emoji: '🍦' },
+                { sku: 'Choco Bar Supreme', cat: 'bar', qty: 48, capacity: 60, demand: 'HIGH', emoji: '🍫' },
+                { sku: 'Choco Bar Supreme', cat: 'bar', qty: 42, capacity: 60, demand: 'HIGH', emoji: '🍫' },
+                { sku: 'Matcha Green Tea Cup', cat: 'cup', qty: 36, capacity: 50, demand: 'HIGH', emoji: '🍵' },
+                { sku: 'Lavender Honey Cup', cat: 'cup', qty: 32, capacity: 50, demand: 'MED', emoji: '🍯' },
+                { sku: 'Wild Berry Sorbet Cup', cat: 'cup', qty: 24, capacity: 50, demand: 'MED', emoji: '🍓' },
+                { sku: 'Chocolate Family Tub', cat: 'tub', qty: 8, capacity: 30, demand: 'LOW', emoji: '🍨' },
+            ];
+        } else {
+            // Balanced Suburban
+            pockets = [
+                { sku: 'Vanilla Cone Classic', cat: 'cone', qty: 48, capacity: 80, demand: 'HIGH', emoji: '🍦' },
+                { sku: 'Choco Bar Supreme', cat: 'bar', qty: 36, capacity: 60, demand: 'HIGH', emoji: '🍫' },
+                { sku: 'Mango Kulfi Cup', cat: 'cup', qty: 28, capacity: 50, demand: 'MED', emoji: '🥭' },
+                { sku: 'Chocolate Family Tub', cat: 'tub', qty: 18, capacity: 30, demand: 'HIGH', emoji: '🍨' },
+                { sku: 'Wild Berry Sorbet Cup', cat: 'cup', qty: 24, capacity: 50, demand: 'MED', emoji: '🍓' },
+                { sku: 'Matcha Green Tea Cup', cat: 'cup', qty: 15, capacity: 50, demand: 'LOW', emoji: '🍵' },
+                { sku: 'Lavender Honey Cup', cat: 'cup', qty: 12, capacity: 50, demand: 'LOW', emoji: '🍯' },
+                { sku: 'Butterscotch Family Tub', cat: 'tub', qty: 10, capacity: 30, demand: 'MED', emoji: '🍨' },
+            ];
+        }
+    }
+
+    // Render Pockets HTML
+    gridPockets.innerHTML = pockets.map((p, idx) => {
+        const fill = p.capacity > 0 ? (p.qty / p.capacity * 100) : 0;
+        return `
+            <div class="freezer-pocket ${p.cat}">
+                <div class="pocket-header">
+                    <span class="pocket-num">SLOT ${idx+1}</span>
+                    <span class="pocket-tag ${p.cat}">${p.cat}</span>
+                </div>
+                <div class="pocket-name">${p.emoji} ${p.sku}</div>
+                <div class="pocket-stats">
+                    <span>Stock: ${p.qty}/${p.capacity}</span>
+                    <span class="pocket-demand-score ${p.demand.toLowerCase()}">Demand: ${p.demand}</span>
+                </div>
+                <div class="pocket-bar-bg">
+                    <div class="pocket-bar ${p.cat}" style="width: ${fill}%"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Trigger pocket highlight pop-in effect
+    gridPockets.querySelectorAll('.freezer-pocket').forEach((pocket, i) => {
+        setTimeout(() => pocket.classList.add('pocket-transition'), i * 40);
+    });
+
+    // 3. Update predicted decay chart
+    updateOrchestratorDecayChart(temp, telemetry);
+
+    // 4. Generate dynamic actions
+    updateOrchestratorActions(temp, humidity, neighborhood, telemetry);
+}
+
+function updateOrchestratorDecayChart(temp, telemetry) {
+    const ctx = document.getElementById('orchestrator-decay-chart');
+    if (!ctx) return;
+
+    // Generate simulated data based on parameters
+    const labels = Array.from({length: 12}, (_, i) => `${i + 1}h`);
+    
+    let sellabilityData = [];
+    let temperatureData = [];
+    
+    let currentSellability = 100;
+    let currentFreezerTemp = -21.5;
+
+    // Telemetry initial temp
+    if (telemetry === 'strain') currentFreezerTemp = -12.0;
+    else if (telemetry === 'outage') currentFreezerTemp = 0.0;
+
+    for (let i = 0; i < 12; i++) {
+        // Temperature rises based on state
+        if (telemetry === 'normal') {
+            currentFreezerTemp = -21.5 + Math.sin(i / 2) * 0.5;
+        } else if (telemetry === 'strain') {
+            currentFreezerTemp += 0.8 + (temp - 30) * 0.05; // slowly heats up
+        } else {
+            currentFreezerTemp += 1.6 + (temp - 30) * 0.12; // quickly heats up
+        }
+        temperatureData.push(parseFloat(currentFreezerTemp.toFixed(1)));
+
+        // Sellability decays depending on freezer temp
+        let decayRate = 0.5;
+        if (currentFreezerTemp > -18) decayRate = 3.0;
+        if (currentFreezerTemp > -12) decayRate = 8.0;
+        if (currentFreezerTemp > -6) decayRate = 18.0;
+        if (currentFreezerTemp > 0) decayRate = 35.0;
+
+        currentSellability = Math.max(0, currentSellability - decayRate);
+        sellabilityData.push(parseFloat(currentSellability.toFixed(1)));
+    }
+
+    if (orchestratorDecayChart) {
+        orchestratorDecayChart.data.labels = labels;
+        orchestratorDecayChart.data.datasets[0].data = sellabilityData;
+        orchestratorDecayChart.data.datasets[1].data = temperatureData;
+        orchestratorDecayChart.update();
+    } else {
+        orchestratorDecayChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Sellable Score (%)', data: sellabilityData, borderColor: COLORS.blue, backgroundColor: COLORS.blue + '08', borderWidth: 2.5, tension: 0.4, fill: true, yAxisID: 'y' },
+                    { label: 'Freezer Temp (°C)', data: temperatureData, borderColor: COLORS.orange, borderWidth: 2, tension: 0.4, borderDash: [4,4], yAxisID: 'y1' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { position: 'left', min: 0, max: 100, title: { display: true, text: 'Sellability %' }, grid: { color: 'rgba(255,255,255,.03)' } },
+                    y1: { position: 'right', min: -25, max: 20, title: { display: true, text: 'Temp °C' }, grid: { display: false } }
+                }
+            }
+        });
+    }
+}
+
+function updateOrchestratorActions(temp, humidity, neighborhood, telemetry) {
+    const feed = document.getElementById('orchestrator-actions-feed');
+    const badge = document.getElementById('orch-action-count');
+    if (!feed) return;
+
+    let actions = [];
+
+    if (telemetry === 'outage') {
+        actions.push({
+            id: 'act-outage-reroute',
+            type: 'critical',
+            emoji: '🚨',
+            title: 'Critical Outage: Charminar Cart JC-1102',
+            desc: 'Freezer temperature has reached 0°C. Cold chain breach detected! Auto-action needed to dispatch cold transfer van and markdown stocks.',
+            btnText: 'Deploy Recovery Van & Promo'
+        });
+    }
+
+    if (telemetry === 'strain' || telemetry === 'outage') {
+        actions.push({
+            id: 'act-strain-markdown',
+            type: 'warning',
+            emoji: '⚠️',
+            title: 'Compressor Overheat: Jubilee Hills Cart JC-802',
+            desc: 'Slow temperature rise (-12.0°C). Suggest auto-markdown of cups/cones by 20% to accelerate sales velocity before spoilage.',
+            btnText: 'Approve 20% Promo Markdown'
+        });
+    }
+
+    if (neighborhood === 'stadium-ipl') {
+        actions.push({
+            id: 'act-stadium-refill',
+            type: 'info',
+            emoji: '🏏',
+            title: 'IPL Stadium Surge: Uppal Cart JC-6890',
+            desc: 'Stadium gate opening. Impulse demand spike predicted (+42%). Deploy slot adjustments to lock 100% cones/bars layout.',
+            btnText: 'Approve Slot Optimization'
+        });
+    }
+
+    if (temp >= 40 && telemetry === 'normal') {
+        actions.push({
+            id: 'act-heat-alert',
+            type: 'warning',
+            emoji: '☀️',
+            title: 'Extreme Weather Stress: Hitech City Cart JC-109',
+            desc: 'Ambient temperature reached 41°C. Sunshade deployment alert sent. Suggest minor price markdown (10%) to preserve sellable minutes.',
+            btnText: 'Acknowledge & Deploy Promo'
+        });
+    }
+
+    if (neighborhood === 'rainy-evening') {
+        actions.push({
+            id: 'act-rainy-compress',
+            type: 'info',
+            emoji: '🌧️',
+            title: 'Assortment Compression: Secunderabad Cart JC-2401',
+            desc: 'Rainfall drops impulse footfall by 70%. Activate compression to vacate single cone slots and prioritize family tubs.',
+            btnText: 'Deploy Planogram Compression'
+        });
+    }
+
+    // Default suburban action to ensure feed is never empty
+    actions.push({
+        id: 'act-default-align',
+        type: 'info',
+        emoji: '🔄',
+        title: 'Banjara Hills Cart JC-331: Layout Mismatch',
+        desc: 'Suburban evening behavior detected but planogram is locked on daytime impulse slots. Auto-realign slot 7-8 to family chocolate tubs.',
+        btnText: 'Approve Realignment'
+    });
+
+    badge.textContent = actions.length + ' Action' + (actions.length > 1 ? 's' : '') + ' Pending';
+    if (actions.length > 1) {
+        badge.className = 'card-badge alert-card';
+    } else {
+        badge.className = 'card-badge pulse-badge';
+    }
+
+    feed.innerHTML = actions.map(act => `
+        <div class="alert-item ${act.type}" id="${act.id}">
+            <span class="alert-icon">${act.emoji}</span>
+            <div class="alert-body">
+                <div class="alert-title" style="font-weight: 700;">${act.title}</div>
+                <div class="alert-detail" style="margin-bottom: 8px;">${act.desc}</div>
+                <button class="btn-action-execute" onclick="executeOrchestratorAction('${act.id}', '${act.title}')">${act.btnText}</button>
+            </div>
+            <span class="alert-time">New</span>
+        </div>
+    `).join('');
+}
+
+// Global action executor called by button onclick
+window.executeOrchestratorAction = function(id, title) {
+    const btn = document.querySelector(`#${id} .btn-action-execute`);
+    if (!btn || btn.classList.contains('success-state')) return;
+
+    btn.innerHTML = '⚡ Deploying...';
+    btn.disabled = true;
+
+    setTimeout(() => {
+        btn.innerHTML = '✓ Deployed Successfully';
+        btn.className = 'btn-action-execute success-state';
+        btn.disabled = true;
+
+        // Increase spoilage saved metrics
+        const savedIncrement = rand(8500, 16000);
+        savedSpoilageRevenue += savedIncrement;
+        document.getElementById('val-spoilage-saved').textContent = '₹' + savedSpoilageRevenue.toLocaleString();
+        
+        // Show premium toast
+        showOrchToast('Action Complete', `Orchestrator successfully deployed recovery for: ${title}`);
+
+        // Update main dashboard alerts feed
+        const dashboardFeed = document.getElementById('alert-feed');
+        if (dashboardFeed) {
+            dashboardFeed.insertAdjacentHTML('afterbegin', `
+                <div class="alert-item success">
+                    <span class="alert-icon">🤖</span>
+                    <div class="alert-body">
+                        <div class="alert-title">Orchestrator Recovery Success</div>
+                        <div class="alert-detail">${title} - Spoilage averted, savings: ₹${savedIncrement.toLocaleString()}</div>
+                    </div>
+                    <span class="alert-time">Just now</span>
+                </div>
+            `);
+        }
+
+        // Trigger pulse highlight on saved value
+        const savedCardVal = document.getElementById('val-spoilage-saved');
+        if (savedCardVal) {
+            savedCardVal.classList.add('text-green');
+            setTimeout(() => savedCardVal.classList.remove('text-green'), 1200);
+        }
+
+        // Fade out the alert item from the list
+        setTimeout(() => {
+            const item = document.getElementById(id);
+            if (item) {
+                item.style.transition = 'all 0.5s ease';
+                item.style.opacity = '0';
+                item.style.height = '0';
+                item.style.padding = '0';
+                item.style.margin = '0';
+                setTimeout(() => {
+                    item.remove();
+                    // Update count
+                    const badge = document.getElementById('orch-action-count');
+                    const remaining = document.querySelectorAll('#orchestrator-actions-feed .alert-item').length;
+                    badge.textContent = remaining + ' Action' + (remaining !== 1 ? 's' : '') + ' Pending';
+                }, 500);
+            }
+        }, 1200);
+
+    }, 1200);
+};
+
+function showOrchToast(title, desc) {
+    // Remove existing toasts if any
+    document.querySelectorAll('.orch-toast').forEach(t => t.remove());
+
+    const toast = document.createElement('div');
+    toast.className = 'orch-toast';
+    toast.innerHTML = `
+        <span style="font-size: 16px;">✅</span>
+        <div style="display: flex; flex-direction: column;">
+            <div class="orch-toast-title">${title}</div>
+            <div class="orch-toast-desc">${desc}</div>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.transition = 'all 0.3s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
 }

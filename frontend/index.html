@@ -80,6 +80,11 @@
                 <span class="menu-label">AI Hub</span>
                 <span class="menu-badge purple-badge">AI</span>
             </a>
+            <a href="#" class="menu-item role-company" data-section="orchestrator" id="nav-orchestrator">
+                <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+                <span class="menu-label">Orchestrator</span>
+                <span class="menu-badge blue-badge" style="background:rgba(88, 166, 255, 0.12); color:var(--accent-blue); border: 1px solid rgba(88, 166, 255, 0.15)">Auto</span>
+            </a>
             <a href="#" class="menu-item role-employee" data-section="live-map" id="nav-map">
                 <span class="menu-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></span>
                 <span class="menu-label">Live Map</span>
@@ -139,6 +144,8 @@
                     <span class="story-dot" data-step="4">5</span>
                     <span class="story-line"></span>
                     <span class="story-dot" data-step="5">6</span>
+                    <span class="story-line"></span>
+                    <span class="story-dot" data-step="6">7</span>
                 </div>
             </div>
             <div class="story-body">
@@ -409,6 +416,144 @@
                     <div class="map-legend"><div class="legend-item"><span class="legend-dot green"></span> Active</div><div class="legend-item"><span class="legend-dot orange"></span> Low Stock</div><div class="legend-item"><span class="legend-dot red"></span> Offline</div><div class="legend-item"><span class="legend-dot blue"></span> Warehouse</div></div>
                 </div>
                 <div id="live-map"></div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECTION: ORCHESTRATOR
+             ═══════════════════════════════════════════════════════════════════ -->
+        <section class="section" id="section-orchestrator">
+            <!-- Orchestrator KPIs -->
+            <div class="kpi-grid-4">
+                <div class="kpi-card" id="kpi-sellable-minutes">
+                    <div class="kpi-icon-wrap ic-cyan">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="kpi-body">
+                        <span class="kpi-label">Sellable Frozen Minutes</span>
+                        <span class="kpi-value mono" id="val-sellable-minutes">284 min</span>
+                        <span class="kpi-change up" id="change-sellable-minutes">Normal decay rate</span>
+                    </div>
+                </div>
+                <div class="kpi-card" id="kpi-melt-risk">
+                    <div class="kpi-icon-wrap ic-orange">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
+                    <div class="kpi-body">
+                        <span class="kpi-label">Melt-Risk Alert State</span>
+                        <span class="kpi-value mono" id="val-melt-risk" style="color: var(--accent-green)">STABLE</span>
+                        <span class="kpi-change up" id="change-melt-risk">All freezers within range</span>
+                    </div>
+                </div>
+                <div class="kpi-card" id="kpi-yield-efficiency">
+                    <div class="kpi-icon-wrap ic-purple">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.21 15.89A10 10 0 1 1 8 2.83M22 12A10 10 0 0 0 12 2v10z"/>
+                        </svg>
+                    </div>
+                    <div class="kpi-body">
+                        <span class="kpi-label">Assortment Yield</span>
+                        <span class="kpi-value mono" id="val-yield-efficiency">94.2%</span>
+                        <span class="kpi-change up" id="change-yield-efficiency">↑ 1.8% vs normal layout</span>
+                    </div>
+                </div>
+                <div class="kpi-card alert-card" id="kpi-spoilage-saved">
+                    <div class="kpi-icon-wrap ic-green">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                    </div>
+                    <div class="kpi-body">
+                        <span class="kpi-label">Spoilage Cost Averted</span>
+                        <span class="kpi-value mono" id="val-spoilage-saved">₹48,200</span>
+                        <span class="kpi-change up">Autonomous recovery impact</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Column Section Workspace -->
+            <div class="two-col-grid">
+                <!-- Left: Hyperlocal Microclimate & Freezer Slot Optimizer -->
+                <div class="card orchestrator-config-card">
+                    <div class="card-header flex-header">
+                        <div class="card-title-group">
+                            <h3 class="card-title">🌪 ... Hyperlocal Orchestration Simulator</h3>
+                            <span class="card-subtitle">Adjust weather conditions and telemetry proxy signals to observe dynamic slot adjustments</span>
+                        </div>
+                    </div>
+                    <div class="orch-panel-body">
+                        <div class="orch-controls-grid">
+                            <div class="control-item">
+                                <label class="control-label">Ambient Temperature: <span id="orch-lbl-temp" class="text-orange" style="font-weight: 700;">34°C</span></label>
+                                <input type="range" id="orch-input-temp" min="20" max="46" value="34" class="orch-slider">
+                            </div>
+                            <div class="control-item">
+                                <label class="control-label">Relative Humidity: <span id="orch-lbl-humidity" class="text-cyan" style="font-weight: 700;">55%</span></label>
+                                <input type="range" id="orch-input-humidity" min="20" max="100" value="55" class="orch-slider">
+                            </div>
+                            <div class="control-item">
+                                <label class="control-label">Neighborhood / Event Accelerator</label>
+                                <select id="orch-input-neighborhood" class="orch-select">
+                                    <option value="typical-suburban" selected>Typical Suburban (Standard Mix)</option>
+                                    <option value="corporate-hotspot">Corporate Hotspot (High Day Cones/Bars)</option>
+                                    <option value="stadium-ipl">Uppal Stadium IPL Match (+42% Impulse Spurt)</option>
+                                    <option value="rainy-evening">Rainy/Cold Evening (Family Tub Priority)</option>
+                                </select>
+                            </div>
+                            <div class="control-item">
+                                <label class="control-label">Freezer Telemetry State</label>
+                                <select id="orch-input-telemetry" class="orch-select">
+                                    <option value="normal" selected>Normal Operation (-21.5°C)</option>
+                                    <option value="strain">Compressor Strain (-12.0°C - Slow Decay)</option>
+                                    <option value="outage">Critical Power Disruption (0.0°C - Fast Melt)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Freezer Planogram Optimizer -->
+                        <div class="freezer-planogram-wrap">
+                            <h4 class="planogram-title">⚡ Live Freezer Flavor-Slot Optimization (8 Compartments)</h4>
+                            <div class="freezer-grid" id="freezer-grid-pockets">
+                                <!-- Generated Dynamically by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Decay Curve and Action Engine -->
+                <div class="stack-cards">
+                    <!-- Sellability Score Decay Trend -->
+                    <div class="chart-card">
+                        <div class="chart-header flex-header">
+                            <div class="chart-title-group">
+                                <h3 class="chart-title">Predicted Sellability Decay & Temperature Curve</h3>
+                                <span class="chart-subtitle">Real-time projection over the next 12 hours</span>
+                            </div>
+                        </div>
+                        <div class="chart-body" style="height: 220px;">
+                            <canvas id="orchestrator-decay-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Melt-Risk Action Engine -->
+                    <div class="card orchestrator-actions-card">
+                        <div class="card-header flex-header">
+                            <div class="card-title-group">
+                                <h3 class="card-title">🤖 Autonomous Melt-Risk Action Engine</h3>
+                                <span class="card-subtitle">Pending recovery operations to secure sellable minutes</span>
+                            </div>
+                            <span class="card-badge pulse-badge" id="orch-action-count">0 Actions Pending</span>
+                        </div>
+                        <div class="alert-feed" id="orchestrator-actions-feed" style="max-height: 280px; min-height: 210px; overflow-y: auto;">
+                            <!-- Actions feed populated dynamically -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
