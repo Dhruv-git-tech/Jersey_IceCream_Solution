@@ -1063,3 +1063,79 @@ body.view-employee .role-company { display: none !important; }
     font-size: 10px;
     color: var(--text-muted);
 }
+
+/* =============================================================================
+   Smart Growth Expansion Panel Styling
+   ============================================================================= */
+.expansion-sim-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.sim-btn-card {
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid var(--border-subtle);
+    padding: 16px;
+    border-radius: var(--radius-md);
+    text-align: center;
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.sim-btn-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(88, 166, 255, 0.04), transparent 60%);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    pointer-events: none;
+}
+
+.sim-btn-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(188, 140, 255, 0.3);
+    background: rgba(22, 28, 40, 0.5);
+    box-shadow: 0 4px 16px rgba(188, 140, 255, 0.06);
+}
+
+.sim-btn-card:hover::before {
+    opacity: 1;
+}
+
+.sim-btn-card .sim-icon {
+    font-size: 22px;
+    margin-bottom: 8px;
+    transition: transform var(--transition-base);
+    display: inline-block;
+}
+
+.sim-btn-card:hover .sim-icon {
+    transform: scale(1.22) rotate(-6deg);
+}
+
+.sim-btn-card .sim-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+}
+
+.sim-btn-card .sim-desc {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.active-channel-status {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 16px;
+    margin-top: 8px;
+}
+
